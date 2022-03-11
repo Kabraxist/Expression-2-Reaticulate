@@ -5,3 +5,5 @@ Type in full path of your .expressionmap and the tool will create a .reabank in 
 Currently only supports keyswitches.
 
 Requires Python 3 + untangle lib
+
+Check [Reaticulate](http://reaticulate.com/)!
