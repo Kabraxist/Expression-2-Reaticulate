@@ -1,48 +1,85 @@
-import untangle
+import untangle, csv
 from pathlib import Path
 
-source_file_path = input("Enter full path to source .expressionmap file: ")
-filename = Path(source_file_path).stem
-folder_path = str(Path(source_file_path).resolve().parent) + '\\'
+class ArticulationBank:
+    def __init__(self, source_file_path) -> None:
+        self.root = untangle.parse(source_file_path)
+        self.articulation_list = []
+        self.bank_group = "Converted Maps"
+        self.bank_name = [i['value'] for i in self.root.InstrumentMap.string if i['name'] == "name"][0]        
 
-root = untangle.parse(source_file_path)
+    def GenerateHeader(self):
+        header = f'//! g="Converted Maps" n="{self.bank_group}"\nBank * * {self.bank_name}\n'
+        return header
 
-instrument_name = [i['value'] for i in root.InstrumentMap.string if i['name'] == "name"][0]
+    def GenerateArticulations(self):
+        articulations = ""
+        for art in self.articulation_list:
+            articulations += f'//! c={art.art_color} i={art.art_icon} o={art.art_action}\n{art.art_progchange} {art.art_name}\n\n'
+        
+        print(articulations)
+            
 
-slots = [i for i in root.InstrumentMap.member if i['name'] == 'slots'][0]
-slots_list = [i for i in slots.list.obj if i['class'] == 'PSoundSlot']
+    def GatherArticulations(self):
+        for slot in self.root.InstrumentMap.member[1].list.obj:
+            art = Articulation()
 
-def GenerateArticulations():
-    output = ""
+            for member in slot.member:
+                if member["name"] == "name": # Get articulation name and generate other values
+                    if(member.string["value"] != ''):
+                        art.art_name = member.string["value"]
+                        art.art_progchange, art.art_color, art.art_icon = UACCList.FindUACC(art.art_name)
+                        self.articulation_list.append(art)
+                
+            for obj in slot.obj: # Action assignment
+                if (obj["class"] == "PSlotMidiAction"):
+                    key = -1
 
-    program_change = 0
+                    note_changer = [i for i in obj.member if i["name"] == "noteChanger"][0]
+                    
+                    for i in note_changer.list.obj.int:
+                        if (i["name"] == "key"):
+                            key = i["value"]
+                    
+                    if (key < 0):
+                        key = [i["value"] for i in obj.int if i["name"] == "key"][0]
+                    
+                    if (int(key) > 0):
+                        art.art_action = f'note:{key}'
 
-    for item in slots_list:
-        program_change += 1
-        result = ""
-        articulation_name = ""
-        articulation_switch = 0
+class Articulation:
+    def __init__(self) -> None:
+        self.art_progchange = 0
+        self.art_name = ""
+        self.art_color = ""
+        self.art_icon = ""
+        self.art_action = ""        
 
-        member = [i for i in item.member if i['name'] == "name"][0]
-        articulation_name = member.string["value"] + " "
+class UACCList:
+    uacc_file = open('UACC List.csv', 'r')
+    reader = csv.DictReader(uacc_file, ["id", "color", "icon"], "names")
 
-        action = [i for i in item.obj if i['class'] == 'PSlotMidiAction'][0]
-        for int in action.int:
-            if(int["name"] == "key"):
-                articulation_switch = int["value"]
+    def FindUACC(art_name):
+        pc, color, icon = "127", "default", "note-quarter"
 
-        output += f'//! c=long i=note-whole o=note:{articulation_switch}\n{program_change} {articulation_name}\n'
-    
-    return(output)
+        for i in UACCList.reader:
+            if (art_name != '' and art_name in i["names"]):
+                pc, color, icon = i["id"], i["color"], i["icon"]
+            else:
+                pass
+        
+        UACCList.uacc_file.seek(0)
+        return pc, color, icon
 
+path = input("Please insert full path...")
 
-def GenerateHeader():
-    header = f'//! g="Converted Maps" n="{instrument_name}"\nBank * * {instrument_name}\n'
-    return header
+art_bank = ArticulationBank(path)
+art_bank.GatherArticulations()
+art_bank.GenerateArticulations()
 
-file = open(folder_path+filename+".reabank", "w")
-file.write(GenerateHeader() + GenerateArticulations())
-file.close()
+#file = open(folder_path+filename+".reabank", "w")
+#file.write(GenerateHeader() + GenerateArticulations())
+#file.close()
 
-print("File must be generated?")
-input("Press any key to exit...")
+#print("File must be generated?")
+#input("Press any key to exit...")
