@@ -9,7 +9,7 @@ Any .expressionmap file should work. If not, please let me know!
 
 ## Usage
 * Put the script files (_main.py and UACC List.csv_) beside a folder that includes .expressionmap files
-* Run the script. It will create a folder named "ReaBanks" which includes converted files
+* Run the script. It will traverse the sibling folders, auto-convert .expressionmaps and move new files to a folder named "ReaBanks"
 * You can copy the contents of new files and use Reaticulate's "Paste from Clipboard" function
 
 ### Requirements
