@@ -8,7 +8,7 @@ Currently, only keyswitches supported. More switch styles (like MIDI CC) will be
 Any .expressionmap file should work. If not, please let me know!
 
 ## Usage
-* Put the script (_main.py_) beside a folder that includes .expressionmap files
+* Put the script files (_main.py and UACC List.csv_) beside a folder that includes .expressionmap files
 * Run the script. It will create a folder named "ReaBanks" which includes converted files
 * You can copy the contents of new files and use Reaticulate's "Paste from Clipboard" function
 
