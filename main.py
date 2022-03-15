@@ -1,5 +1,6 @@
 import untangle, csv
 from pathlib import Path, PurePath
+#import difflib
 
 class ArticulationBank:
     def __init__(self, source_file_path) -> None:
@@ -10,13 +11,14 @@ class ArticulationBank:
         self.ParseArticulations()    
 
     def GenerateHeader(self):
-        header = f'//! g="Converted Maps" n="{self.bank_group}"\nBank * * {self.bank_name}\n'
+        header = f'//! g="Converted Maps" n="{self.bank_name}"\nBank * * {self.bank_name}\n'
         return header
 
     def GenerateArticulations(self):
         articulations = ""
         for art in self.articulation_list:
-            articulations += f'//! c={art.art_color} i={art.art_icon} o={art.art_action}\n{art.art_progchange} {art.art_name}\n'
+            if (art.art_action is not None):
+                articulations += f'//! c={art.art_color} i={art.art_icon} o={art.art_action}\n{art.art_progchange} {art.art_name}\n'
         
         return articulations
             
@@ -33,19 +35,24 @@ class ArticulationBank:
                 
             for obj in slot.obj: # Action assignment
                 if (obj["class"] == "PSlotMidiAction"):
-                    key = -1
+                    key = None
 
                     note_changer = [i for i in obj.member if i["name"] == "noteChanger"][0]
                     
                     for i in note_changer.list.obj.int:
-                        if (i["name"] == "key"):
+                        if (i["name"] == "key" and i["value"] > 0):
                             key = i["value"]
+                        else:
+                            key = [i["value"] for i in obj.int if i["name"] == "key"][0]
                     
-                    if (key < 0):
-                        key = [i["value"] for i in obj.int if i["name"] == "key"][0]
-                    
-                    if (int(key) > 0):
+                    if (key is not None):
                         art.art_action = f'note:{key}'
+
+                    if (key is None or key == "-1"):
+                        midi_message = [i for i in obj.member if i["name"] == "midiMessages"][0]
+                        a, b, c = midi_message.list.obj.int
+                        art.art_action = f'cc:{b["value"]},{c["value"]}'
+                        art.art_progchange = c["value"]
 
 class Articulation:
     def __init__(self) -> None:

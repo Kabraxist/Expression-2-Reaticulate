@@ -12,6 +12,9 @@ Any .expressionmap file should work. If not, please let me know!
 * Run _main.py_. It will traverse the sibling folders, auto-convert .expressionmaps and move new files to a folder named "ReaBank Export"
 * You can copy the contents of new files and use Reaticulate's "Paste from Clipboard" function
 
+Please be aware that you still need to update some articulations by hand. 
+Also, you might want to change "group" name (g="Converted Maps) field.
+
 ### Requirements
 * Python 3.x
 * untangle (pip install untangle)
