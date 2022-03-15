@@ -1,12 +1,13 @@
 import untangle, csv
-from pathlib import Path
+from pathlib import Path, PurePath
 
 class ArticulationBank:
     def __init__(self, source_file_path) -> None:
         self.root = untangle.parse(source_file_path)
         self.articulation_list = []
         self.bank_group = "Converted Maps"
-        self.bank_name = [i['value'] for i in self.root.InstrumentMap.string if i['name'] == "name"][0]        
+        self.bank_name = [i['value'] for i in self.root.InstrumentMap.string if i['name'] == "name"][0]
+        self.ParseArticulations()    
 
     def GenerateHeader(self):
         header = f'//! g="Converted Maps" n="{self.bank_group}"\nBank * * {self.bank_name}\n'
@@ -15,12 +16,11 @@ class ArticulationBank:
     def GenerateArticulations(self):
         articulations = ""
         for art in self.articulation_list:
-            articulations += f'//! c={art.art_color} i={art.art_icon} o={art.art_action}\n{art.art_progchange} {art.art_name}\n\n'
+            articulations += f'//! c={art.art_color} i={art.art_icon} o={art.art_action}\n{art.art_progchange} {art.art_name}\n'
         
-        print(articulations)
+        return articulations
             
-
-    def GatherArticulations(self):
+    def ParseArticulations(self):
         for slot in self.root.InstrumentMap.member[1].list.obj:
             art = Articulation()
 
@@ -71,15 +71,27 @@ class UACCList:
         UACCList.uacc_file.seek(0)
         return pc, color, icon
 
-path = input("Please insert full path...")
+class FileOps:
+    expression_maps = []
 
-art_bank = ArticulationBank(path)
-art_bank.GatherArticulations()
-art_bank.GenerateArticulations()
+    def ExportReabank(content, map):
+        export_path = PurePath(Path.cwd(), "Reabank Export", map.relative_to(Path.cwd()).with_suffix(".reabank"))
 
-#file = open(folder_path+filename+".reabank", "w")
-#file.write(GenerateHeader() + GenerateArticulations())
-#file.close()
+        Path(export_path.parent).mkdir(parents=True, exist_ok=True)
 
-#print("File must be generated?")
-#input("Press any key to exit...")
+        file = open(Path(export_path), "w")
+        file.write(content)
+        file.close()
+
+    def ConvertExpressionMaps():
+        for map in FileOps.expression_maps:
+            bank = ArticulationBank(str(map))
+            result = bank.GenerateHeader() + bank.GenerateArticulations()
+
+            FileOps.ExportReabank(result, map)
+
+    def FindExpressionMaps():
+        FileOps.expression_maps = sorted(Path.cwd().rglob('*.expressionmap'))
+
+FileOps.FindExpressionMaps()
+FileOps.ConvertExpressionMaps()
