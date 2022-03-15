@@ -40,27 +40,34 @@ class ArticulationBank:
                     note_changer = [i for i in obj.member if i["name"] == "noteChanger"][0]
                     
                     for i in note_changer.list.obj.int:
-                        if (i["name"] == "key" and i["value"] > 0):
-                            key = i["value"]
-                        else:
-                            key = [i["value"] for i in obj.int if i["name"] == "key"][0]
+                        try:
+                            if (i["name"] == "key" and i["value"] > 0):
+                                key = i["value"]
+                            else:
+                                key = [i["value"] for i in obj.int if i["name"] == "key" and i["value"] != "-1"][0]
+                        except:
+                            pass
                     
                     if (key is not None):
                         art.art_action = f'note:{key}'
 
                     if (key is None or key == "-1"):
                         midi_message = [i for i in obj.member if i["name"] == "midiMessages"][0]
-                        a, b, c = midi_message.list.obj.int
-                        art.art_action = f'cc:{b["value"]},{c["value"]}'
-                        art.art_progchange = c["value"]
+                        try:
+                            a, b, c = midi_message.list.obj.int
+                            art.art_action = f'cc:{b["value"]},{c["value"]}'
+                            art.art_progchange = c["value"]
+                        except:
+                            pass
 
+                        
 class Articulation:
     def __init__(self) -> None:
         self.art_progchange = 0
         self.art_name = ""
         self.art_color = ""
         self.art_icon = ""
-        self.art_action = ""        
+        self.art_action = None
 
 class UACCList:
     uacc_file = open('UACC List.csv', 'r')
@@ -102,3 +109,4 @@ class FileOps:
 
 FileOps.FindExpressionMaps()
 FileOps.ConvertExpressionMaps()
+input("Conversion complete. Press a key to continue...")
