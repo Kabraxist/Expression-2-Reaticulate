@@ -3,7 +3,7 @@
 A basic tool to convert Steinberg (Cubase / Nuendo / Dorico) Expression Maps (.expressionmap) to Reaper Reaticulate (.reabank) format.
 The tool will export a Reaticulate-compatible .reabank file with some guesswork added for fancy visuals, based on [Spitfire UACC](https://spitfire-webassets.s3.amazonaws.com/pdfs/UACCv2spec.pdf).
 
-Currently, only keyswitches supported. More switch styles (like MIDI CC) will be added in the future.
+Currently, only keyswitches and CC messages are supported.
 
 Any .expressionmap file should work. If not, please let me know!
 
