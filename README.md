@@ -18,6 +18,7 @@ Any .expressionmap file should work. If not, please let me know!
 
 ## Support
 Tested with Windows 10, Reaper v6.51, Reaticulate 0.5.6
+
 Script is only tested in Windows environment, but should work in any Mac OS X or Linux distributions.
 
 ## Thanks to
