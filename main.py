@@ -1,6 +1,5 @@
-import untangle, csv
+import untangle, csv, re, difflib
 from pathlib import Path, PurePath
-#import difflib
 
 class ArticulationBank:
     def __init__(self, source_file_path) -> None:
@@ -30,11 +29,12 @@ class ArticulationBank:
                 if member["name"] == "name": # Get articulation name and generate other values
                     if(member.string["value"] != ''):
                         art.art_name = member.string["value"]
-                        art.art_progchange, art.art_color, art.art_icon = UACCList.FindUACC(art.art_name)
+                        art.art_progchange, art.art_color, art.art_icon = UACCList.FindUACC2(art.art_name)
                         self.articulation_list.append(art)
                 
             for obj in slot.obj: # Action assignment
                 if (obj["class"] == "PSlotMidiAction"):
+                    
                     key = None
 
                     note_changer = [i for i in obj.member if i["name"] == "noteChanger"][0]
@@ -59,12 +59,12 @@ class ArticulationBank:
                             art.art_progchange = c["value"]
                         except:
                             pass
-
                         
 class Articulation:
     def __init__(self) -> None:
         self.art_progchange = 0
         self.art_name = ""
+        self.disp_name = ""
         self.art_color = ""
         self.art_icon = ""
         self.art_action = None
@@ -78,6 +78,20 @@ class UACCList:
 
         for i in UACCList.reader:
             if (art_name != '' and art_name in i["names"]):
+                pc, color, icon = i["id"], i["color"], i["icon"]
+            else:
+                pass
+        
+        UACCList.uacc_file.seek(0)
+        return pc, color, icon
+
+    def FindUACC2(art_name):
+        pc, color, icon = "127", "default", "note-quarter"
+
+        for i in UACCList.reader:
+            match = difflib.get_close_matches(art_name, i["names"])
+
+            if (len(match) > 0):
                 pc, color, icon = i["id"], i["color"], i["icon"]
             else:
                 pass
