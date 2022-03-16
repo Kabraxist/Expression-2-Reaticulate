@@ -139,9 +139,14 @@ class FileOps:
         FileOps.expression_maps = sorted(Path.cwd().rglob('*.expressionmap'))
         print(str(len(FileOps.expression_maps))+" expression maps found...")
 
-print("EXPRESSIONMAP TO REATICULATE CONVERTER")
-print("Starting conversion...")
-FileOps.FindExpressionMaps()
-FileOps.ConvertExpressionMaps()
-#FileOps.ExportMergedReabank()
-input("Conversion complete. Press a key to continue...")
+
+def main():
+    print("EXPRESSIONMAP TO REATICULATE CONVERTER")
+    print("Starting conversion...")
+    FileOps.FindExpressionMaps()
+    FileOps.ConvertExpressionMaps()
+    FileOps.ExportMergedReabank()
+    input("Conversion complete. Press a key to continue...")
+
+if __name__ == "__main__":
+    main()
