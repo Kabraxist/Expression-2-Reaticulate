@@ -2,6 +2,8 @@ import untangle, csv, re, difflib
 from pathlib import Path, PurePath
 
 class ArticulationBank:
+    merged_result = ""
+
     def __init__(self, source_file_path) -> None:
         self.root = untangle.parse(source_file_path)
         self.articulation_list = []
@@ -11,6 +13,7 @@ class ArticulationBank:
 
     def GenerateHeader(self):
         header = f'//! g="Converted Maps" n="{self.bank_name}"\nBank * * {self.bank_name}\n'
+        ArticulationBank.merged_result += header
         return header
 
     def GenerateArticulations(self):
@@ -19,6 +22,7 @@ class ArticulationBank:
             if (art.art_action is not None):
                 articulations += f'//! c={art.art_color} i={art.art_icon} o={art.art_action}\n{art.art_progchange} {art.art_name}\n'
         
+        ArticulationBank.merged_result += articulations + "\n"
         return articulations
             
     def ParseArticulations(self):
@@ -87,14 +91,21 @@ class UACCList:
 
     def FindUACC2(art_name):
         pc, color, icon = "127", "default", "note-quarter"
+        match, match_candidate = "", ""
+        match_score, cur_match_score = 0, 0
 
         for i in UACCList.reader:
-            match = difflib.get_close_matches(art_name, i["names"])
+            match_candidate = difflib.get_close_matches(art_name, i["names"], cutoff=0.2)
 
-            if (len(match) > 0):
+            if (len(match_candidate) > 0):
+                cur_match_score = difflib.SequenceMatcher(None, match_candidate[0], art_name).ratio()
+
+            if (cur_match_score > match_score):
+                match = match_candidate[0]
+                match_score = cur_match_score
+                cur_match_score = 0
+
                 pc, color, icon = i["id"], i["color"], i["icon"]
-            else:
-                pass
         
         UACCList.uacc_file.seek(0)
         return pc, color, icon
@@ -118,9 +129,19 @@ class FileOps:
 
             FileOps.ExportReabank(result, map)
 
+    def ExportMergedReabank():
+        export_path = PurePath(Path.cwd(), "Reabank Export", "Merged Export.reabank")
+        file = open(Path(export_path), "w")
+        file.write(ArticulationBank.merged_result)
+        file.close
+
     def FindExpressionMaps():
         FileOps.expression_maps = sorted(Path.cwd().rglob('*.expressionmap'))
+        print(str(len(FileOps.expression_maps))+" expression maps found...")
 
+print("EXPRESSIONMAP TO REATICULATE CONVERTER")
+print("Starting conversion...")
 FileOps.FindExpressionMaps()
 FileOps.ConvertExpressionMaps()
+#FileOps.ExportMergedReabank()
 input("Conversion complete. Press a key to continue...")
