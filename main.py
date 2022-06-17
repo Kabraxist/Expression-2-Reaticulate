@@ -18,9 +18,11 @@ class ArticulationBank:
 
     def GenerateArticulations(self):
         articulations = ""
-        for art in self.articulation_list:
+        for i, art in enumerate(self.articulation_list):
             if (art.art_action is not None):
-                articulations += f'//! c={art.art_color} i={art.art_icon} o={art.art_action}\n{art.art_progchange} {art.art_name}\n'
+                ## Temp fix for overlapping Prog Changes
+                ## articulations += f'//! c={art.art_color} i={art.art_icon} o={art.art_action}\n{art.art_progchange} {art.art_name}\n'
+                articulations += f'//! c={art.art_color} i={art.art_icon} o={art.art_action}\n{i+1} {art.art_name}\n'
         
         ArticulationBank.merged_result += articulations + "\n"
         return articulations
@@ -143,5 +145,5 @@ print("EXPRESSIONMAP TO REATICULATE CONVERTER")
 print("Starting conversion...")
 FileOps.FindExpressionMaps()
 FileOps.ConvertExpressionMaps()
-#FileOps.ExportMergedReabank()
+FileOps.ExportMergedReabank()
 input("Conversion complete. Press a key to continue...")
