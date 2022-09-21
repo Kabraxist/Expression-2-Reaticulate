@@ -98,7 +98,7 @@ class UACCList:
             match_candidate = difflib.get_close_matches(art_name, i["names"], cutoff=0.2)
 
             if (len(match_candidate) > 0):
-                cur_match_score = difflib.SequenceMatcher(None, match_candidate[0], art_name).ratio()
+                cur_match_score = difflib.SequenceMatcher(None, art_name, match_candidate[0]).ratio()
 
             if (cur_match_score > match_score):
                 match = match_candidate[0]
@@ -138,7 +138,6 @@ class FileOps:
     def FindExpressionMaps():
         FileOps.expression_maps = sorted(Path.cwd().rglob('*.expressionmap'))
         print(str(len(FileOps.expression_maps))+" expression maps found...")
-
 
 def main():
     print("EXPRESSIONMAP TO REATICULATE CONVERTER")
