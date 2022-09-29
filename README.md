@@ -1,6 +1,6 @@
 # Expression-2-Reaticulate
 ## Info
-A basic tool to convert Steinberg (Cubase / Nuendo / Dorico) Expression Maps (.expressionmap) to Reaper Reaticulate (.reabank) format.
+A basic tool to convert Steinberg **(Cubase / Nuendo / Dorico) Expression Maps (.expressionmap)** and **(new! / experimental) Apple Logic Articulation Maps (.plist)** to Reaper Reaticulate (.reabank) format.
 The tool will export a Reaticulate-compatible .reabank file with some guesswork added for fancy visuals, based on [Spitfire UACC](https://spitfire-webassets.s3.amazonaws.com/pdfs/UACCv2spec.pdf).
 
 Currently, only keyswitches and CC messages are supported.
@@ -14,6 +14,14 @@ Any .expressionmap file should work. If not, please let me know!
 
 Please be aware that you still need to update some articulations by hand. 
 Also, you might want to change "group" name (g="Converted Maps) field.
+
+### Experimental
+To use the Logic .plist conversion feature
+* Open the script with any text editor
+* Find main() function
+* Uncomment *FileOps.FindPlistMaps()* and *FileOps.ConvertPlistMaps()* lines
+* Comment out *FileOps.FindExpressionMaps()* and *FileOps.ConvertExpressionMaps()* lines
+* Save and run the script
 
 ### Requirements
 * Python 3.x
