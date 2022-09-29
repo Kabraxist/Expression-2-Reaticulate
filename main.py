@@ -97,7 +97,13 @@ class ArticulationBankPlist:
             art.art_name = slot['Name']
             art.art_progchange, art.art_color, art.art_icon = UACCList.FindUACC2(art.art_name)
 
-            note_number = slot['Output'][0]['MB1']
+            try:
+                note_number = slot['Output'][0]['MB1']
+            except KeyError:
+                note_number = slot['Output']['MB1']
+            except:
+                note_number = 0
+
             art.art_action = f'note:{note_number}'
 
             self.articulation_list.append(art)
