@@ -1,4 +1,4 @@
-import untangle, csv, re, difflib
+import untangle, csv, re, difflib, plistlib
 from pathlib import Path, PurePath
 
 class ArticulationBank:
@@ -65,7 +65,43 @@ class ArticulationBank:
                             art.art_progchange = c["value"]
                         except:
                             pass
-                        
+
+class ArticulationBankPlist:
+    def __init__(self, source_file_path) -> None:
+        self.root = plistlib.load(open(source_file_path, 'rb'))
+        self.articulation_list = []
+        self.bank_group = "Converted Maps"
+        self.bank_name = self.root['Name'].replace('.plist', '')
+        self.ParseArticulations()
+
+    def GenerateHeader(self):
+        header = f'//! g="Converted Maps" n="{self.bank_name}"\nBank * * {self.bank_name}\n'
+        ArticulationBank.merged_result += header
+        return header
+        pass
+
+    def GenerateArticulations(self):
+        articulations = ""
+        for i, art in enumerate(self.articulation_list):
+            if (art.art_action is not None):
+                ## Temp fix for overlapping Prog Changes
+                ## articulations += f'//! c={art.art_color} i={art.art_icon} o={art.art_action}\n{art.art_progchange} {art.art_name}\n'
+                articulations += f'//! c={art.art_color} i={art.art_icon} o={art.art_action}\n{i+1} {art.art_name}\n'
+        
+        ArticulationBank.merged_result += articulations + "\n"
+        return articulations
+
+    def ParseArticulations(self):
+        for slot in self.root['Articulations']:
+            art = Articulation()
+            art.art_name = slot['Name']
+            art.art_progchange, art.art_color, art.art_icon = UACCList.FindUACC2(art.art_name)
+
+            note_number = slot['Output'][0]['MB1']
+            art.art_action = f'note:{note_number}'
+
+            self.articulation_list.append(art)
+
 class Articulation:
     def __init__(self) -> None:
         self.art_progchange = 0
@@ -131,6 +167,13 @@ class FileOps:
 
             FileOps.ExportReabank(result, map)
 
+    def ConvertPlistMaps():
+        for map in FileOps.expression_maps:
+            bank = ArticulationBankPlist(str(map))
+            result = bank.GenerateHeader() + bank.GenerateArticulations()
+
+            FileOps.ExportReabank(result, map)
+
     def ExportMergedReabank():
         export_path = PurePath(Path.cwd(), "Reabank Export", "Merged Export.reabank")
         file = open(Path(export_path), "w")
@@ -141,12 +184,21 @@ class FileOps:
         FileOps.expression_maps = sorted(Path.cwd().rglob('*.expressionmap'))
         print(str(len(FileOps.expression_maps))+" expression maps found...")
 
+    def FindPlistMaps():
+        FileOps.expression_maps = sorted(Path.cwd().rglob('*.plist'))
+        print(str(len(FileOps.expression_maps))+" Logic plist files found...")
+
 def main():
     print("EXPRESSIONMAP TO REATICULATE CONVERTER")
     print("Starting conversion...")
+    
     FileOps.FindExpressionMaps()
     FileOps.ConvertExpressionMaps()
-    FileOps.ExportMergedReabank()
+
+    #FileOps.FindPlistMaps()
+    #FileOps.ConvertPlistMaps()
+
+    #FileOps.ExportMergedReabank()
     input("Conversion complete. Press a key to continue...")
 
 if __name__ == "__main__":
