@@ -97,14 +97,21 @@ class ArticulationBankPlist:
             art.art_name = slot['Name']
             art.art_progchange, art.art_color, art.art_icon = UACCList.FindUACC2(art.art_name)
 
-            try:
-                note_number = slot['Output'][0]['MB1']
-            except KeyError:
-                note_number = slot['Output']['MB1']
-            except:
-                note_number = 0
+            action = ''
 
-            art.art_action = f'note:{note_number}'
+            try:
+                action = f'note:' + str(slot['Output']['MB1'])
+            except:
+                for act in slot['Output']:
+                    if action != '': action += f'/'
+
+                    if act['Status'] == 'Note On': 
+                        action += f'note:{act["MB1"]}'
+                    elif act['Status'] == 'Controller': 
+                        action += f'cc:{act["MB1"]},{act["ValueLow"]}'
+                                      
+
+            art.art_action = action
 
             self.articulation_list.append(art)
 
@@ -198,13 +205,13 @@ def main():
     print("EXPRESSIONMAP TO REATICULATE CONVERTER")
     print("Starting conversion...")
     
-    FileOps.FindExpressionMaps()
-    FileOps.ConvertExpressionMaps()
+    #FileOps.FindExpressionMaps()
+    #FileOps.ConvertExpressionMaps()
 
-    #FileOps.FindPlistMaps()
-    #FileOps.ConvertPlistMaps()
+    FileOps.FindPlistMaps()
+    FileOps.ConvertPlistMaps()
 
-    #FileOps.ExportMergedReabank()
+    FileOps.ExportMergedReabank()
     input("Conversion complete. Press a key to continue...")
 
 if __name__ == "__main__":
