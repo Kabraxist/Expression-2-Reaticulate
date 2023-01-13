@@ -1,5 +1,7 @@
-import untangle, csv, difflib, plistlib, time, sys
+import untangle, csv, difflib, plistlib, time, sys, os
 from pathlib import Path, PurePath
+
+os.chdir(sys.path[0]) # Set CWD to current path
 
 class ArticulationBank:
     merged_result = ""
