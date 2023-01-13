@@ -1,4 +1,4 @@
-import untangle, csv, re, difflib, plistlib
+import untangle, csv, difflib, plistlib, time, sys
 from pathlib import Path, PurePath
 
 class ArticulationBank:
@@ -35,7 +35,7 @@ class ArticulationBank:
                 if member["name"] == "name": # Get articulation name and generate other values
                     if(member.string["value"] != ''):
                         art.art_name = member.string["value"]
-                        art.art_progchange, art.art_color, art.art_icon = UACCList.FindUACC2(art.art_name)
+                        art.art_progchange, art.art_color, art.art_icon = UACCList.FindUACC(art.art_name)
                         self.articulation_list.append(art)
                 
             for obj in slot.obj: # Action assignment
@@ -95,7 +95,7 @@ class ArticulationBankPlist:
         for slot in self.root['Articulations']:
             art = Articulation()
             art.art_name = slot['Name']
-            art.art_progchange, art.art_color, art.art_icon = UACCList.FindUACC2(art.art_name)
+            art.art_progchange, art.art_color, art.art_icon = UACCList.FindUACC(art.art_name)
 
             action = ''
 
@@ -125,22 +125,16 @@ class Articulation:
         self.art_action = None
 
 class UACCList:
-    uacc_file = open('UACC List.csv', 'r')
+    try:
+        uacc_file = open('UACC List.csv', 'r')
+    except IOError:
+        print("Couldn't find UACC List file. Exiting...")
+        time.sleep(2)
+        sys.exit()
+        
     reader = csv.DictReader(uacc_file, ["id", "color", "icon"], "names")
 
     def FindUACC(art_name):
-        pc, color, icon = "127", "default", "note-quarter"
-
-        for i in UACCList.reader:
-            if (art_name != '' and art_name in i["names"]):
-                pc, color, icon = i["id"], i["color"], i["icon"]
-            else:
-                pass
-        
-        UACCList.uacc_file.seek(0)
-        return pc, color, icon
-
-    def FindUACC2(art_name):
         pc, color, icon = "127", "default", "note-quarter"
         match, match_candidate = "", ""
         match_score, cur_match_score = 0, 0
@@ -202,17 +196,27 @@ class FileOps:
         print(str(len(FileOps.expression_maps))+" Logic plist files found...")
 
 def main():
-    print("EXPRESSIONMAP TO REATICULATE CONVERTER")
-    print("Starting conversion...")
-    
-    #FileOps.FindExpressionMaps()
-    #FileOps.ConvertExpressionMaps()
+    print(f'EXPRESSIONMAP TO REATICULATE CONVERTER')
+    print(f'Pick your source file type\n[1] Cubase .expressionmap\n[2] Logic .plist')
+    selection = input()
 
-    FileOps.FindPlistMaps()
-    FileOps.ConvertPlistMaps()
+    if selection == '1':
+        FileOps.FindExpressionMaps()
+        FileOps.ConvertExpressionMaps()
+        print("Starting conversion...")
+        
+        FileOps.ExportMergedReabank()
+        input("Conversion complete. Press a key to continue...")
+    elif selection == '2':
+        FileOps.FindPlistMaps()
+        FileOps.ConvertPlistMaps()
+        print("Starting conversion...")
 
-    FileOps.ExportMergedReabank()
-    input("Conversion complete. Press a key to continue...")
+        FileOps.ExportMergedReabank()
+        input("Conversion complete. Press a key to continue...")
+    else:
+        print('No options picked. Exiting...')
+        time.sleep(1)
 
 if __name__ == "__main__":
     main()
