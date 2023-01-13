@@ -131,7 +131,7 @@ class UACCList:
         print("Couldn't find UACC List file. Exiting...")
         time.sleep(2)
         sys.exit()
-        
+
     reader = csv.DictReader(uacc_file, ["id", "color", "icon"], "names")
 
     def FindUACC(art_name):
@@ -168,18 +168,24 @@ class FileOps:
         file.close()
 
     def ConvertExpressionMaps():
+        print("Starting conversion...")  
         for map in FileOps.expression_maps:
             bank = ArticulationBank(str(map))
             result = bank.GenerateHeader() + bank.GenerateArticulations()
 
             FileOps.ExportReabank(result, map)
+            print(end='\x1b[2K') # LINE CLEAR
+            print(f'Converted {bank.bank_name}', end='\r')
 
     def ConvertPlistMaps():
+        print("Starting conversion...")  
         for map in FileOps.expression_maps:
             bank = ArticulationBankPlist(str(map))
             result = bank.GenerateHeader() + bank.GenerateArticulations()
 
             FileOps.ExportReabank(result, map)
+            print(end='\x1b[2K') # LINE CLEAR
+            print(f'Converted {bank.bank_name}', end='\r')
 
     def ExportMergedReabank():
         export_path = PurePath(Path.cwd(), "Reabank Export", "Merged Export.reabank")
@@ -200,23 +206,20 @@ def main():
     print(f'Pick your source file type\n[1] Cubase .expressionmap\n[2] Logic .plist')
     selection = input()
 
-    if selection == '1':
-        FileOps.FindExpressionMaps()
-        FileOps.ConvertExpressionMaps()
-        print("Starting conversion...")
-        
-        FileOps.ExportMergedReabank()
-        input("Conversion complete. Press a key to continue...")
-    elif selection == '2':
-        FileOps.FindPlistMaps()
-        FileOps.ConvertPlistMaps()
-        print("Starting conversion...")
+    match(selection):
+        case '1':
+            FileOps.FindExpressionMaps()
+            FileOps.ConvertExpressionMaps()     
+        case '2':
+            FileOps.FindPlistMaps()
+            FileOps.ConvertPlistMaps() 
+        case _:
+            print(f'No valid option picked. Exiting...')
+            time.sleep(1)
+            exit()
 
-        FileOps.ExportMergedReabank()
-        input("Conversion complete. Press a key to continue...")
-    else:
-        print('No options picked. Exiting...')
-        time.sleep(1)
+    FileOps.ExportMergedReabank()
+    input("Conversion complete. Press a key to exit...")
 
 if __name__ == "__main__":
     main()
