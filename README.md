@@ -1,31 +1,16 @@
 # Expression-2-Reaticulate
 ## Info
-A basic tool to convert Steinberg **(Cubase / Nuendo / Dorico) Expression Maps (.expressionmap)** and **(new! / experimental) Apple Logic Articulation Maps (.plist)** to Reaper Reaticulate (.reabank) format.
-The tool will export a Reaticulate-compatible .reabank file with some guesswork added for fancy visuals, based on [Spitfire UACC](https://spitfire-webassets.s3.amazonaws.com/pdfs/UACCv2spec.pdf).
+This tool converts Steinberg (Cubase / Nuendo / Dorico) Expression Maps (.expressionmap) and Apple Logic Articulation Maps (.plist) to Reaper Reaticulate (.reabank) format. It will export a Reaticulate-compatible .reabank file, with some visual enhancements based on [Spitfire UACC](https://spitfire-webassets.s3.amazonaws.com/pdfs/UACCv2spec.pdf) list.
 
 Currently, only keyswitches and CC messages are supported.
 
-Any .expressionmap file should work. If not, please let me know!
-
 ## Usage
-* Put the script files (_main.py and UACC List.csv_) beside a folder that includes .expressionmap files
-* Run _main.py_. It will traverse the sibling folders, auto-convert .expressionmaps and move new files to a folder named "ReaBank Export"
-* You can copy the contents of new files and use Reaticulate's "Paste from Clipboard" function
-
-Please be aware that you still need to update some articulations by hand. 
-Also, you might want to change "group" name (g="Converted Maps) field.
-
-### Experimental
-To use the Logic .plist conversion feature
-* Open the script with any text editor
-* Find main() function
-* Uncomment *FileOps.FindPlistMaps()* and *FileOps.ConvertPlistMaps()* lines
-* Comment out *FileOps.FindExpressionMaps()* and *FileOps.ConvertExpressionMaps()* lines
-* Save and run the script
-
-### Requirements
-* Python 3.x
-* untangle (pip install untangle)
+* Download the archive file
+* Export files beside the folder that includes .expressionmap or .plist files
+* Run _main.py_
+* The script will scan sibling folders, convert maps, then move new files to "ReaBank Export".
+* You can copy the text from new documents and use Reaticulate's "Paste from Clipboard" feature to add them to your project.
+* You might want to change "group" name (g="Converted Maps) field.
 
 ## Support
 Tested with Windows 10, Reaper v6.51, Reaticulate 0.5.6
