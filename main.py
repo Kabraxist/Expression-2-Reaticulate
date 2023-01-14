@@ -177,7 +177,7 @@ class FileOps:
 
             FileOps.ExportReabank(result, map)
             print(end='\x1b[2K') # LINE CLEAR
-            print(f'Converted {bank.bank_name}', end='\r')
+            print(f'Processing {bank.bank_name}...', end='\r')
 
     def ConvertPlistMaps():
         print("Starting conversion...")  
@@ -187,7 +187,7 @@ class FileOps:
 
             FileOps.ExportReabank(result, map)
             print(end='\x1b[2K') # LINE CLEAR
-            print(f'Converted {bank.bank_name}', end='\r')
+            print(f'Processing {bank.bank_name}...', end='\r')
 
     def ExportMergedReabank():
         export_path = PurePath(Path.cwd(), "Reabank Export", "Merged Export.reabank")
