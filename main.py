@@ -1,4 +1,5 @@
 import untangle, csv, difflib, plistlib, time, sys, os
+import xml.etree.ElementTree as ET
 from pathlib import Path, PurePath
 
 os.chdir(sys.path[0]) # Set CWD to current path
@@ -8,13 +9,14 @@ class ArticulationBank:
 
     def __init__(self, source_file_path) -> None:
         self.root = untangle.parse(source_file_path)
+        self.rootXML = ET.parse(source_file_path)
         self.articulation_list = []
-        self.bank_group = "Converted Maps"
+        self.bank_group = Path(*(Path.relative_to(Path(source_file_path), Path.cwd()).parts[1:-1]))
         self.bank_name = [i['value'] for i in self.root.InstrumentMap.string if i['name'] == "name"][0]
         self.ParseArticulations()    
 
     def GenerateHeader(self):
-        header = f'//! g="Converted Maps" n="{self.bank_name}"\nBank * * {self.bank_name}\n'
+        header = f'//! g="{self.bank_group}" n="{self.bank_name}"\nBank * * {self.bank_name}\n'
         ArticulationBank.merged_result += header
         return header
 
@@ -30,43 +32,28 @@ class ArticulationBank:
         return articulations
             
     def ParseArticulations(self):
-        for slot in self.root.InstrumentMap.member[1].list.obj:
+        
+        # dot is root, rest finds the first item unless checked with bracket queries
+        for sound_slot in self.rootXML.find("./member/[@name = 'slots']/list"):
             art = Articulation()
+            art.art_name = sound_slot.find("./member/[@name = 'name']/string").attrib["value"]
+            art.art_progchange, art.art_color, art.art_icon = UACCList.FindUACC(art.art_name)
+            self.articulation_list.append(art)
 
-            for member in slot.member:
-                if member["name"] == "name": # Get articulation name and generate other values
-                    if(member.string["value"] != ''):
-                        art.art_name = member.string["value"]
-                        art.art_progchange, art.art_color, art.art_icon = UACCList.FindUACC(art.art_name)
-                        self.articulation_list.append(art)
+            for output_event in sound_slot.findall(".//*[@class = 'POutputEvent']"):
+                status = output_event.find("./int/[@name = 'status']").attrib["value"]
+                data1 = output_event.find("./int/[@name = 'data1']").attrib["value"]
+                data2 = output_event.find("./int/[@name = 'data2']").attrib["value"]
+
+                actions = []
+
+                if (status == "144"):
+                    actions.append(f"note:{data1},{data2}")
                 
-            for obj in slot.obj: # Action assignment
-                if (obj["class"] == "PSlotMidiAction"):
-                    
-                    key = None
+                if (status == "176"):
+                    actions.append(f"cc:{data1},{data2}")
 
-                    note_changer = [i for i in obj.member if i["name"] == "noteChanger"][0]
-                    
-                    for i in note_changer.list.obj.int:
-                        try:
-                            if (i["name"] == "key" and i["value"] > 0):
-                                key = i["value"]
-                            else:
-                                key = [i["value"] for i in obj.int if i["name"] == "key" and i["value"] != "-1"][0]
-                        except:
-                            pass
-                    
-                    if (key is not None):
-                        art.art_action = f'note:{key}'
-
-                    if (key is None or key == "-1"):
-                        midi_message = [i for i in obj.member if i["name"] == "midiMessages"][0]
-                        try:
-                            a, b, c = midi_message.list.obj.int
-                            art.art_action = f'cc:{b["value"]},{c["value"]}'
-                            art.art_progchange = c["value"]
-                        except:
-                            pass
+                art.art_action = "/".join(actions)
 
 class ArticulationBankPlist:
     def __init__(self, source_file_path) -> None:
@@ -77,7 +64,7 @@ class ArticulationBankPlist:
         self.ParseArticulations()
 
     def GenerateHeader(self):
-        header = f'//! g="Converted Maps" n="{self.bank_name}"\nBank * * {self.bank_name}\n'
+        header = f'//! g="{self.bank_group}" n="{self.bank_name}"\nBank * * {self.bank_name}\n'
         ArticulationBank.merged_result += header
         return header
         pass
